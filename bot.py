@@ -2,6 +2,7 @@ import os
 import logging
 from telegram import Update
 from telegram.ext import ApplicationBuilder, ContextTypes, CommandHandler, MessageHandler, filters
+from telegram.request import HTTPXRequest
 from dotenv import load_dotenv
 from chat_manager import ChatManager
 from ai_client import get_ai_response
@@ -11,7 +12,8 @@ load_dotenv()
 
 # Configuration
 BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
-OWNER_ID = int(os.getenv("OWNER_ID"))
+_owner_id_str = os.getenv("OWNER_ID")
+OWNER_ID = int(_owner_id_str) if _owner_id_str else None
 
 # Logging setup
 logging.basicConfig(
@@ -29,8 +31,11 @@ async def enable(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user = update.effective_user
     chat = update.effective_chat
     
+    print(f"Debug: /enable called by user_id={user.id} in chat_id={chat.id}. Owner ID is {OWNER_ID}")
+
     if user.id != OWNER_ID:
-        return # Silent ignore for non-owners
+        await update.message.reply_text(f"شما اجازه ندارید. (ID شما: {user.id})")
+        return
 
     if chat.type in ['group', 'supergroup']:
         if chat_manager.enable_chat(chat.id):
@@ -137,13 +142,23 @@ if __name__ == '__main__':
         print("Error: TELEGRAM_BOT_TOKEN not found in environment variables.")
         exit(1)
     
+    if not OWNER_ID:
+        print("Error: OWNER_ID not found in environment variables.")
+        exit(1)
+    
     # Check for proxy
     proxy_url = os.getenv("TELEGRAM_PROXY_URL")
-    builder = ApplicationBuilder().token(BOT_TOKEN)
+    
+    # Configure request with longer timeouts and proxy if available
+    request_kwargs = {'connect_timeout': 30.0, 'read_timeout': 30.0}
+    if proxy_url:
+        request_kwargs['proxy'] = proxy_url  # Use 'proxy' instead of deprecated 'proxy_url'
+
+    request = HTTPXRequest(**request_kwargs)
+    
+    builder = ApplicationBuilder().token(BOT_TOKEN).request(request)
     
     if proxy_url:
-        builder.proxy(proxy_url)
-        builder.get_updates_proxy(proxy_url)
         print(f"Using proxy: {proxy_url}")
 
     application = builder.build()
