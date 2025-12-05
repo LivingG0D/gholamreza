@@ -23,7 +23,6 @@ This is a Telegram bot acting as a Persian AI assistant named "Gholamreza".
 2.  **Environment Variables:**
     - Copy `.env.example` to a new file named `.env`.
     - Fill in your `TELEGRAM_BOT_TOKEN` and `OPENROUTER_API_KEY`.
-    - The `OWNER_ID` is set to 90441478 by default.
 
 3.  **Run:**
     ```bash

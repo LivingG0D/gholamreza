@@ -11,7 +11,7 @@ load_dotenv()
 
 # Configuration
 BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
-OWNER_ID = int(os.getenv("OWNER_ID", 90441478))
+OWNER_ID = int(os.getenv("OWNER_ID"))
 
 # Logging setup
 logging.basicConfig(
@@ -130,14 +130,23 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     response = await get_ai_response(prompt_text, ai_context)
     
     # Reply
-    await message.reply_text(response)
+    await message.reply_text(response, quote=True)
 
 if __name__ == '__main__':
     if not BOT_TOKEN:
         print("Error: TELEGRAM_BOT_TOKEN not found in environment variables.")
         exit(1)
+    
+    # Check for proxy
+    proxy_url = os.getenv("TELEGRAM_PROXY_URL")
+    builder = ApplicationBuilder().token(BOT_TOKEN)
+    
+    if proxy_url:
+        builder.proxy(proxy_url)
+        builder.get_updates_proxy(proxy_url)
+        print(f"Using proxy: {proxy_url}")
 
-    application = ApplicationBuilder().token(BOT_TOKEN).build()
+    application = builder.build()
 
     application.add_handler(CommandHandler('start', start))
     application.add_handler(CommandHandler('enable', enable))
