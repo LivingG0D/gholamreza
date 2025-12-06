@@ -86,12 +86,14 @@ def should_respond(update: Update, context: ContextTypes.DEFAULT_TYPE):
         return True
     
     if is_reply:
-        replied_user_id = message.reply_to_message.from_user.id
-        bot_id = context.bot.id
-        
-        # Reply to Bot
-        if replied_user_id == bot_id:
-            return True
+        # Check if from_user exists (it might be None for channels/anonymous admins)
+        if message.reply_to_message.from_user:
+            replied_user_id = message.reply_to_message.from_user.id
+            bot_id = context.bot.id
+            
+            # Reply to Bot
+            if replied_user_id == bot_id:
+                return True
             
     return False
 
@@ -112,10 +114,17 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     # Handle Reply Context
     if message.reply_to_message and message.reply_to_message.text:
         replied_text = message.reply_to_message.text
-        replied_user = message.reply_to_message.from_user.first_name or "کاربر"
+        
+        # Determine replied user name safely
+        if message.reply_to_message.from_user:
+            replied_user = message.reply_to_message.from_user.first_name or "کاربر"
+            replied_user_id = message.reply_to_message.from_user.id
+        else:
+            replied_user = "کانال/ناشناس"
+            replied_user_id = None
         
         # If replying to bot, treat it as conversation history
-        if message.reply_to_message.from_user.id == context.bot.id:
+        if replied_user_id == context.bot.id:
             ai_context.append({"role": "assistant", "content": replied_text})
         else:
             # If replying to someone else, provide that context
