@@ -6,7 +6,7 @@ This is a Telegram bot acting as a Persian AI assistant named "Gholamreza".
 - **Persona:** Gholamreza, the most knowledgeable and powerful man in the world (comedy/roast style).
 - **Model:** Uses OpenRouter (Qwen).
 - **Access Control:** 
-  - DMs only work for the owner (ID: 90441478).
+  - DMs only work for the owner
   - Group chats must be explicitly enabled by the owner.
 - **Triggers:**
   - Starts with "غلامرضا" or "غلام رضا".
@@ -26,7 +26,7 @@ This is a Telegram bot acting as a Persian AI assistant named "Gholamreza".
 
 3.  **Run:**
     ```bash
-    python bot.py
+    python3 bot.py
     ```
 
 ## Commands
